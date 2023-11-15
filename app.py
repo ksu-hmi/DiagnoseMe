@@ -23,7 +23,7 @@ def index():
     # Define the URLs to scrape
     urls = [
         "https://www.ecdc.europa.eu/en/all-topics",
-        "https://www.ecdc.europa.eu/en/all-topics",
+        "https://www.nhsinform.scot/illnesses-and-conditions/a-to-z/",
     ]
 
     # Scrape data from the URLs

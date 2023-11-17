@@ -2,41 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiagnoseMe</title>
+    <title>DiagnoseMe - Symptom Checker</title>
 </head>
 <body>
     <h1>DiagnoseMe - Symptom Checker</h1>
-    
-    <form method="post" action="/">
-        <fieldset>
-            <legend>Select Symptoms:</legend>
-            {% for symptom in symptoms %}
-                <label>
-                    <input type="checkbox" name="symptoms" value="{{ symptom }}">
-                    {{ symptom }}
-                </label><br>
-            {% endfor %}
-        </fieldset>
-        
+    <form method="POST">
+        <label>Select Symptoms (Select all that apply):</label><br>
+        {% for symptom in sample_symptoms %}
+            <input type="checkbox" id="{{ symptom }}" name="symptoms" value="{{ symptom }}">
+            <label for="{{ symptom }}">{{ symptom }}</label><br>
+        {% endfor %}
         <br>
-        
         <input type="submit" value="Submit">
     </form>
 
-    {% if data %}
-        <h2>Scraped Data:</h2>
-        {% for entry in data %}
-            <h3>{{ entry['title'] }}</h3>
-            <ul>
-                {% for link in entry['links'] %}
-                    <li><a href="{{ link[1] }}" target="_blank">{{ link[0] }}</a></li>
-                {% endfor %}
-            </ul>
-        {% endfor %}
+    {% if selected_disease_urls %}
+        <h2>Applicable Disease URLs:</h2>
+        <ul>
+            {% for disease_url in selected_disease_urls %}
+                <li><a href='{{ disease_url }}'>{{ disease_url }}</a></li>
+            {% endfor %}
+        </ul>
     {% endif %}
+
+    <p>DiagnoseMe is an informational tool and is not a substitute for professional medical advice, diagnosis, or treatment. The content provided on this website is for general informational purposes only and should not be considered as medical advice.</p>
+    <p>This tool is designed to assist users in exploring potential health conditions based on publicly available information. It is crucial to consult with a qualified healthcare professional for accurate diagnosis and appropriate medical treatment.</p>
 </body>
 </html>
-
-
-

@@ -1,60 +1,63 @@
 from flask import Flask, render_template, request
-import requests
 from bs4 import BeautifulSoup
-
-app = Flask(__name__, template_folder='project/templates')
+import requests
+import concurrent.futures
+from urllib.parse import urljoin
 
 app = Flask(__name__)
 
-# Function to scrape data from a URL
-def scrape_website(url):
+def extract_disease_urls():
+    base_url = "https://www.nhsinform.scot/illnesses-and-conditions/a-to-z/"
+    response = requests.get(base_url)
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        disease_links = soup.select(".az_list_indivisual a")
+        base_url = "https://www.nhsinform.scot"
+        return [urljoin(base_url, link['href']) for link in disease_links]
+    else:
+        return []
+
+def check_symptom_for_url(url, symptom):
     response = requests.get(url)
     if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        # Assuming diseases are listed in hyperlinks under the "Directory: Guidance on prevention and control" section
-        disease_links = soup.select('div#content div.main-content a')
-        diseases = [link.get_text() for link in disease_links]
-        return {'diseases': diseases}
-    else:
-        return None
+        soup = BeautifulSoup(response.content, 'html.parser')
+        page_text = soup.get_text().lower()
+        return symptom.lower() in page_text
 
-# Sample list of symptoms
-sample_symptoms = [
-    'fever',
-    'cough',
-    'headache',
-    # Add more symptoms as needed
-]
-
-# Base URL for scraping
-base_url = "https://www.ecdc.europa.eu/en/all-topics"
-
-# Routes
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    sample_symptoms = [
+        'pale skin',
+        'tiredness',
+        'breathlessness',
+        'infections',
+        'bleeding',
+        # Add more symptoms or keywords as needed
+    ]
+
+    selected_disease_urls = []
+
     if request.method == 'POST':
         selected_symptoms = request.form.getlist('symptoms')
-        # Define the URLs to scrape
-        urls = [base_url]
+        disease_urls = extract_disease_urls()
 
-        # Scrape data from the URLs
-        scraped_data = []
-        for url in urls:
-            data = scrape_website(url)
-            if data:
-                scraped_data.append(data)
+        if not disease_urls:
+            return render_template('index.html', selected_disease_urls=[], sample_symptoms=sample_symptoms, no_diseases=True)
 
-        # Filter diseases based on selected symptoms (dummy logic)
-        filtered_diseases = []
-        for disease in scraped_data[0].get('diseases', []):
-            # Check if all selected symptoms are present in the disease name
-            if all(symptom.lower() in disease.lower() for symptom in selected_symptoms):
-                filtered_diseases.append(disease)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = {executor.submit(check_symptom_for_url, url, symptom): (url, symptom) for url in disease_urls for symptom in selected_symptoms}
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                if result:
+                    selected_disease_urls.append(futures[future][0])
+                    break  # Stop at the first matching symptom
+                    
+        no_diseases = not selected_disease_urls
+        return render_template('index.html', selected_disease_urls=selected_disease_urls,
+                               sample_symptoms=sample_symptoms, no_diseases=no_diseases)
 
-        return render_template('index.html', data=filtered_diseases, symptoms=sample_symptoms)
-
-    return render_template('index.html', data=None, symptoms=sample_symptoms)
+    return render_template('index.html', selected_disease_urls=[], sample_symptoms=sample_symptoms, no_diseases=False)
 
 if __name__ == '__main__':
     app.run(debug=True)
-

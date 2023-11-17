@@ -16,6 +16,16 @@
         <input type="submit" value="Submit">
     </form>
 
+    {% if selected_symptoms %}
+    <h2>Selected Symptoms:</h2>
+    <ul>
+        {% for symptom in selected_symptoms %}
+            <li>{{ symptom }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+
     {% if selected_disease_urls %}
         <h2>Applicable Disease URLs:</h2>
         <ul>

@@ -62,6 +62,7 @@ def index():
     ]
 
     selected_disease_urls = []
+    selected_symptoms = []  # Initialize an empty list to hold selected symptoms
 
     if request.method == 'POST':
         selected_symptoms = request.form.getlist('symptoms')
@@ -76,13 +77,12 @@ def index():
                 result = future.result()
                 if result:
                     selected_disease_urls.append(futures[future][0])
-                    break  # Stop at the first matching symptom
-                    
+                    # Commenting out 'break' to find all matching symptoms instead of stopping at the first match
+
         no_diseases = not selected_disease_urls
         return render_template('index.html', selected_disease_urls=selected_disease_urls,
-                               sample_symptoms=sample_symptoms, no_diseases=no_diseases)
+                               sample_symptoms=sample_symptoms, no_diseases=no_diseases, selected_symptoms=selected_symptoms)
 
-    return render_template('index.html', selected_disease_urls=[], sample_symptoms=sample_symptoms, no_diseases=False)
-
+    return render_template('index.html', selected_disease_urls=[], sample_symptoms=sample_symptoms, no_diseases=False, selected_symptoms=selected_symptoms)
 if __name__ == '__main__':
     app.run(debug=True)

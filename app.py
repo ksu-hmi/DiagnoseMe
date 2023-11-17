@@ -33,7 +33,32 @@ def index():
         'breathlessness',
         'infections',
         'bleeding',
-        # Add more symptoms or keywords as needed
+        'cough',
+        'fever',
+        'nausea',
+        'vomiting',
+        'diarrhea',
+        'constipation',
+        'headache',
+        'joint pain',
+        'muscle pain',
+        'abdominal pain',
+        'chest pain',
+        'back pain',
+        'fatigue',
+        'dizziness',
+        'swelling',
+        'weight loss',
+        'weight gain',
+        'rash',
+        'sore throat',
+        'difficulty swallowing',
+        'vision problems',
+        'hearing loss',
+        'numbness',
+        'tingling',
+        'seizures'
+        # Add more symptoms as needed
     ]
 
     selected_disease_urls = []
